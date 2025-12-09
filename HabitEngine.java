@@ -6,34 +6,34 @@ import java.io.FileWriter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class HabitEngine {
-	Scanner input = new Scanner(System.in);
-    ArrayList<Habit> habits;
+	Scanner input = new Scanner(System.in);   // Scanner for user input
+    ArrayList<Habit> habits;   // List to store all habits
     
-    // No-arg constructor
+    // No-arg constructor: loads habits from storage when HabitEngine is created
     public HabitEngine() {
     this.habits = HabitStorage.loadHabits();
     }
     
-    // Existing constructor
+    // Constructor that accepts an existing list of habits
     public HabitEngine(ArrayList<Habit> habits) {
         this.habits = habits;
     }
 
     
+    // Inner class representing a Habit
     class Habit {
-        String id;
-        String title;
-        String frequency;  
-        int streak;
-        int goal;
-        String lastCheckDate;
-        boolean autoAdjust;
+        String id;          // Unique identifier for each habit
+        String title;       // Name of the habit
+        String frequency;   // DAILY or WEEKLY
+        int streak;         // Current streak count
+        int goal;           // Goal to reach in streak units
+        String lastCheckDate;   // Last date habit was checked in
+        boolean autoAdjust;     // Automatically increase goal if reached
 
         // Constructor 1: default
         Habit() {
@@ -55,24 +55,27 @@ public class HabitEngine {
             this.autoAdjust = true;
             this.lastCheckDate = "";
         }
-
+        
+        // Display habit details as a string
         public String toString() {
             return title + " [Freq:" + frequency + "] [Streak:" + streak + "/" + goal + "] [Last: " + lastCheckDate + "]";
         }
     }
     
     
-    
+    // Inner class for saving/loading habits to/from a JSON file
     class HabitStorage {
-        private static final String file = "habits.json";
-        private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
+        private static final String file = "habits.json";   // JSON file path
+        private static Gson gson = new GsonBuilder().setPrettyPrinting().create();   // Gson instance for JSON operations
+        
+        // Save habits to file
         public static void saveHabits(ArrayList<Habit> habits) {
             try(FileWriter fw = new FileWriter(file)){
                 gson.toJson(habits, fw);
             } catch (Exception e) { e.printStackTrace(); }
         }
-
+        
+        // Load habits from file
         public static ArrayList<Habit> loadHabits() {
             ArrayList<Habit> habits = new ArrayList<>();
             try(BufferedReader br = new BufferedReader(new FileReader(file))){
@@ -84,7 +87,7 @@ public class HabitEngine {
 
 
     
-    
+    //*** Main Habit Engine menu***
     public void habitMenu() {
     	// Warn if any habit was missed
 		   String today = LocalDate.now().toString();
@@ -98,6 +101,8 @@ public class HabitEngine {
 		           System.out.println("⚠ You missed weekly habit: " + h.title);
 		       }
 		   }
+		   
+		    // Habit Engine menu loop
 		    while(true){
 		        System.out.println("\n=== *Habit Engine* ===");
 		        System.out.println("1. Add Habit");
@@ -120,17 +125,20 @@ public class HabitEngine {
     }
     
     
+    // Add a new habit
     public void addHabit() {
     	System.out.print("Habit Title: ");
 	    String title = input.nextLine();
-
+        
+	    // Frequency & input validation
 	    System.out.print("Frequency (DAILY/WEEKLY): ");
 	    String freq = input.nextLine().trim().toUpperCase();
 	    while (!freq.equals("DAILY") && !freq.equals("WEEKLY")) {
 	        System.out.print("Invalid input, choose DAILY/WEEKLY: ");
 	        freq = input.nextLine().trim().toUpperCase();
 	    }
-
+	    
+	    // Goal input validation
 	    System.out.print("Streak goal (days/weeks) : ");
 	    String goalInput = input.nextLine();
 	    while(!goalInput.matches("\\d+")) {
@@ -146,7 +154,7 @@ public class HabitEngine {
 	    System.out.println("Habit added successfully!");
     }
     
-    
+    // View all habits (with progress percentage)
     public void viewHabits() {
     	System.out.println("\n=== Your Habits Pookie : ===");
 	    for(int i=0;i<habits.size();i++){
@@ -157,7 +165,7 @@ public class HabitEngine {
 	    }
     }
     
-    
+    // Check-in a habit (increment streak)
     public void checkIn() {
     	if (habits.isEmpty()) {
 	        System.out.println("No habits available to check-in.");
@@ -224,12 +232,12 @@ public class HabitEngine {
 	        h.goal += 7;
 	    }
 
-	    HabitStorage.saveHabits(habits);
+	    HabitStorage.saveHabits(habits);   // Save updated habits
 	    System.out.println("✅ Great job! Streak updated :)");
-	    Soundplayer.playbeeb();
+	    Soundplayer.playbeeb();   // Play beep :)
     }
     
-    
+    // Delete a habit
     public void deleteHabit() {
     	viewHabits();
 	    System.out.print("Enter habit index to delete: ");
@@ -243,7 +251,7 @@ public class HabitEngine {
 	    System.out.println("Habit deleted.");
     }
     
-    
+    // Check if a habit can be checked-in today/this week
     public boolean canCheckIn(Habit h) {
 	    String today = LocalDate.now().toString();
 
@@ -271,8 +279,8 @@ public class HabitEngine {
 	    return true;
     }
     
+    // Convert a repeated Task into a Habit
     public void convertTaskToHabit(Task t) {
-
         if(t.repeat.equalsIgnoreCase("NONE")) return;
 
         this.habits = HabitStorage.loadHabits();
@@ -299,3 +307,4 @@ public class HabitEngine {
     }
 
 }
+
